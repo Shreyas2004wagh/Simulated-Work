@@ -1,31 +1,77 @@
-const buttons = document.querySelectorAll("button");
-const resultDisplay = document.getElementById("result");
+// DOM elements
+const rockButton = document.getElementById("rock");
+const paperButton = document.getElementById("paper");
+const scissorsButton = document.getElementById("scissors");
+const resultText = document.getElementById("result");
 
-buttons.forEach((button) => {
-  button.addEventListener("click", () => {
-    const playerChoice = button.id;
-    console.log(`Player chose: ${playerChoice}`);
-    playGame(playerChoice);
-  });
-});
+// Variables for scores
+let playerScore = 0;
+let computerScore = 0;
 
-function playGame(playerChoice) {
+// DOM elements for displaying scores
+const playerScoreDisplay = document.getElementById("playerScore");
+const computerScoreDisplay = document.getElementById("computerScore");
+
+// DOM elements for displaying choices
+const playerChoiceDisplay = document.getElementById("playerChoice");
+const computerChoiceDisplay = document.getElementById("computerChoice");
+
+// Function to get computer's choice (random)
+function getComputerChoice() {
   const choices = ["rock", "paper", "scissors"];
-  const computerChoice = choices[Math.floor(Math.random() * choices.length)];
-  console.log(`Computer chose: ${computerChoice}`);
+  const randomIndex = Math.floor(Math.random() * 3);
+  return choices[randomIndex];
+}
 
-  let result;
+// Function to decide the winner
+function decideWinner(playerChoice, computerChoice) {
   if (playerChoice === computerChoice) {
-    result = "It's a tie!";
+    return "It's a tie!";
   } else if (
     (playerChoice === "rock" && computerChoice === "scissors") ||
     (playerChoice === "scissors" && computerChoice === "paper") ||
     (playerChoice === "paper" && computerChoice === "rock")
   ) {
-    result = "You win!";
+    playerScore++; // Increment player score
+    playerScoreDisplay.textContent = playerScore; // Update player score in UI
+    return "You win!";
   } else {
-    result = "You lose!";
+    computerScore++; // Increment computer score
+    computerScoreDisplay.textContent = computerScore; // Update computer score in UI
+    return "Computer wins!";
   }
-
-  resultDisplay.textContent = result;
 }
+
+// Function to play a round
+function playRound(playerChoice) {
+  const computerChoice = getComputerChoice();
+
+  // Update the displayed choices
+  playerChoiceDisplay.textContent = `Your Choice: ${playerChoice}`;
+  computerChoiceDisplay.textContent = `Computer's Choice: ${computerChoice}`;
+
+  const result = decideWinner(playerChoice, computerChoice);
+  resultText.textContent = `${result} (You: ${playerChoice}, Computer: ${computerChoice})`;
+}
+
+// Event listeners for player choices
+rockButton.addEventListener("click", () => playRound("rock"));
+paperButton.addEventListener("click", () => playRound("paper"));
+scissorsButton.addEventListener("click", () => playRound("scissors"));
+
+// Function to reset the game
+function resetGame() {
+  playerScore = 0;
+  computerScore = 0;
+  playerScoreDisplay.textContent = playerScore;
+  computerScoreDisplay.textContent = computerScore;
+  resultText.textContent = "Make your move!";
+
+  // Reset the choices display
+  playerChoiceDisplay.textContent = "Your Choice: ";
+  computerChoiceDisplay.textContent = "Computer's Choice: ";
+}
+
+// Reset button event listener
+const resetButton = document.getElementById("reset");
+resetButton.addEventListener("click", resetGame);
