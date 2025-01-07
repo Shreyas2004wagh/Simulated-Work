@@ -4,19 +4,15 @@ const paperButton = document.getElementById("paper");
 const scissorsButton = document.getElementById("scissors");
 const resultText = document.getElementById("result");
 
-// Variables for scores
 let playerScore = 0;
 let computerScore = 0;
 
-// DOM elements for displaying scores
 const playerScoreDisplay = document.getElementById("playerScore");
 const computerScoreDisplay = document.getElementById("computerScore");
 
-// DOM elements for displaying choices
 const playerChoiceDisplay = document.getElementById("playerChoice");
 const computerChoiceDisplay = document.getElementById("computerChoice");
 
-// Function to get computer's choice (random)
 function getComputerChoice() {
   const choices = ["rock", "paper", "scissors"];
   const randomIndex = Math.floor(Math.random() * 3);
@@ -59,7 +55,6 @@ rockButton.addEventListener("click", () => playRound("rock"));
 paperButton.addEventListener("click", () => playRound("paper"));
 scissorsButton.addEventListener("click", () => playRound("scissors"));
 
-// Function to reset the game
 function resetGame() {
   playerScore = 0;
   computerScore = 0;
@@ -72,6 +67,5 @@ function resetGame() {
   computerChoiceDisplay.textContent = "Computer's Choice: ";
 }
 
-// Reset button event listener
 const resetButton = document.getElementById("reset");
 resetButton.addEventListener("click", resetGame);
