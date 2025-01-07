@@ -19,7 +19,6 @@ function getComputerChoice() {
   return choices[randomIndex];
 }
 
-// Function to decide the winner
 function decideWinner(playerChoice, computerChoice) {
   if (playerChoice === computerChoice) {
     return "It's a tie!";
@@ -38,7 +37,6 @@ function decideWinner(playerChoice, computerChoice) {
   }
 }
 
-// Function to play a round
 function playRound(playerChoice) {
   const computerChoice = getComputerChoice();
 
@@ -50,7 +48,6 @@ function playRound(playerChoice) {
   resultText.textContent = `${result} (You: ${playerChoice}, Computer: ${computerChoice})`;
 }
 
-// Event listeners for player choices
 rockButton.addEventListener("click", () => playRound("rock"));
 paperButton.addEventListener("click", () => playRound("paper"));
 scissorsButton.addEventListener("click", () => playRound("scissors"));
