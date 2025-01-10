@@ -1,5 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
   const squares = document.querySelectorAll(".grid div");
+  const result = document.querySelector("#result");
+  const displayCurrentPlayer = document.querySelector("#current-player");
   let currentPlayer = 1;
 
   const winningArrays = [
@@ -87,9 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
         square3.classList.contains("player-one") &&
         square4.classList.contains("player-one")
       ) {
-        alert("Player One Wins!");
-        resetGame();
-        return;
+        result.innerHTML = "Player One Wins!";
       }
 
       if (
@@ -98,39 +98,29 @@ document.addEventListener("DOMContentLoaded", () => {
         square3.classList.contains("player-two") &&
         square4.classList.contains("player-two")
       ) {
-        alert("Player Two Wins!");
-        resetGame();
-        return;
+        result.innerHTML = "Player Two Wins!";
       }
     }
   }
 
-  function resetGame() {
-    squares.forEach((square) => {
-      square.classList.remove("taken", "player-one", "player-two");
-    });
-    currentPlayer = 1;
-  }
-
   for (let i = 0; i < squares.length; i++) {
     squares[i].onclick = () => {
-      // Prevent clicks on taken squares or out-of-bound moves
       if (
-        squares[i].classList.contains("taken") ||
-        (i < 35 && !squares[i + 7].classList.contains("taken"))
+        squares[i + 7].classList.contains("taken") &&
+        !squares[i].classList.contains("taken")
       ) {
-        alert("Can't go here");
-        return;
-      }
-
-      if (currentPlayer === 1) {
-        squares[i].classList.add("taken", "player-one");
-        currentPlayer = 2;
-      } else {
-        squares[i].classList.add("taken", "player-two");
-        currentPlayer = 1;
-      }
-
+        if (currentPlayer == 1) {
+          squares[i].classList.add("taken");
+          squares[i].classList.add("player-one");
+          currentPlayer = 2;
+          displayCurrentPlayer.innerHTML = currentPlayer;
+        } else if (currentPlayer == 2) {
+          squares[i].classList.add("taken");
+          squares[i].classList.add("player-two");
+          currentPlayer = 1;
+          displayCurrentPlayer.innerHTML = currentPlayer;
+        }
+      } else alert("cant go here");
       checkBoard();
     };
   }
