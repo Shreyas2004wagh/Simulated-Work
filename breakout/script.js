@@ -16,7 +16,19 @@ let ballCurrentPosition = ballStart;
 
 let timerId;
 let score = 0;
+let powerUps = [];
+let balls = [ballCurrentPosition];
 
+// Sound effects
+const sounds = {
+  hit: new Audio("sounds/game-bonus-144751.mp3"),
+  destroy: new Audio("sounds/game-bonus-144751.mp3ō"), 
+  powerUp: new Audio("sounds/game-bonus-144751.mp3"),
+  win: new Audio("sounds/victorymale-version-230553.mp3"), 
+  lose: new Audio("sounds/you-lose-game-sound-230514.mp3"), 
+};
+
+// Block class
 class Block {
   constructor(xAxis, yAxis) {
     this.bottomLeft = [xAxis, yAxis];
@@ -44,6 +56,7 @@ const blocks = [
   new Block(450, 210),
 ];
 
+// Add blocks to the grid
 function addBlocks() {
   for (let i = 0; i < blocks.length; i++) {
     const block = document.createElement("div");
@@ -51,7 +64,6 @@ function addBlocks() {
     block.style.left = blocks[i].bottomLeft[0] + "px";
     block.style.bottom = blocks[i].bottomLeft[1] + "px";
     grid.appendChild(block);
-    console.log(blocks[i].bottomLeft);
   }
 }
 addBlocks();
@@ -71,14 +83,12 @@ function moveUser(e) {
     case "ArrowLeft":
       if (currentPosition[0] > 0) {
         currentPosition[0] -= 10;
-        console.log(currentPosition[0] > 0);
         drawUser();
       }
       break;
     case "ArrowRight":
       if (currentPosition[0] < boardWidth - blockWidth) {
         currentPosition[0] += 10;
-        console.log(currentPosition[0]);
         drawUser();
       }
       break;
@@ -92,78 +102,99 @@ function drawUser() {
 }
 
 function drawBall() {
-  ball.style.left = ballCurrentPosition[0] + "px";
-  ball.style.bottom = ballCurrentPosition[1] + "px";
+  balls.forEach((ballPos, index) => {
+    const ballEl = document.querySelectorAll(".ball")[index];
+    ballEl.style.left = ballPos[0] + "px";
+    ballEl.style.bottom = ballPos[1] + "px";
+  });
 }
 
 function moveBall() {
-  ballCurrentPosition[0] += xDirection;
-  ballCurrentPosition[1] += yDirection;
+  balls.forEach((ballPos, index) => {
+    ballPos[0] += xDirection;
+    ballPos[1] += yDirection;
+    checkForCollisions(index);
+  });
   drawBall();
-  checkForCollisions();
 }
 timerId = setInterval(moveBall, 30);
 
-function checkForCollisions() {
+function checkForCollisions(ballIndex) {
+  const ballPos = balls[ballIndex];
   for (let i = 0; i < blocks.length; i++) {
     if (
-      ballCurrentPosition[0] > blocks[i].bottomLeft[0] &&
-      ballCurrentPosition[0] < blocks[i].bottomRight[0] &&
-      ballCurrentPosition[1] + ballDiameter > blocks[i].bottomLeft[1] &&
-      ballCurrentPosition[1] < blocks[i].topLeft[1]
+      ballPos[0] > blocks[i].bottomLeft[0] &&
+      ballPos[0] < blocks[i].bottomRight[0] &&
+      ballPos[1] + ballDiameter > blocks[i].bottomLeft[1] &&
+      ballPos[1] < blocks[i].topLeft[1]
     ) {
+      sounds.destroy.play(); // Play block destruction sound
       const allBlocks = Array.from(document.querySelectorAll(".block"));
       allBlocks[i].classList.remove("block");
       blocks.splice(i, 1);
       changeDirection();
       score++;
       scoreDisplay.innerHTML = score;
-      if (blocks.length == 0) {
+
+      if (Math.random() > 0.7) spawnPowerUp(blocks[i].bottomLeft);
+      if (blocks.length === 0) {
         scoreDisplay.innerHTML = "You Win!";
+        sounds.win.play(); // Play win sound
         clearInterval(timerId);
         document.removeEventListener("keydown", moveUser);
       }
     }
   }
+
   if (
-    ballCurrentPosition[0] >= boardWidth - ballDiameter ||
-    ballCurrentPosition[0] <= 0 ||
-    ballCurrentPosition[1] >= boardHeight - ballDiameter
+    ballPos[0] >= boardWidth - ballDiameter ||
+    ballPos[0] <= 0 ||
+    ballPos[1] >= boardHeight - ballDiameter
   ) {
+    sounds.hit.play(); // Play wall hit sound
     changeDirection();
   }
 
+  // Paddle collision detection
   if (
-    ballCurrentPosition[0] > currentPosition[0] &&
-    ballCurrentPosition[0] < currentPosition[0] + blockWidth &&
-    ballCurrentPosition[1] > currentPosition[1] &&
-    ballCurrentPosition[1] < currentPosition[1] + blockHeight
+    ballPos[0] > currentPosition[0] &&
+    ballPos[0] < currentPosition[0] + blockWidth &&
+    ballPos[1] > currentPosition[1] &&
+    ballPos[1] < currentPosition[1] + blockHeight
   ) {
+    sounds.hit.play();
     changeDirection();
   }
 
-  if (ballCurrentPosition[1] <= 0) {
-    clearInterval(timerId);
-    scoreDisplay.innerHTML = "You lose!";
-    document.removeEventListener("keydown", moveUser);
+  // Check for game over
+  if (ballPos[1] <= 0) {
+    sounds.lose.play();
+    balls.splice(ballIndex, 1);
+    if (balls.length === 0) {
+      scoreDisplay.innerHTML = "You lose!";
+      clearInterval(timerId);
+      document.removeEventListener("keydown", moveUser);
+    }
   }
 }
 
 function changeDirection() {
-  if (xDirection === 2 && yDirection === 2) {
-    yDirection = -2;
-    return;
-  }
-  if (xDirection === 2 && yDirection === -2) {
-    xDirection = -2;
-    return;
-  }
-  if (xDirection === -2 && yDirection === -2) {
-    yDirection = 2;
-    return;
-  }
-  if (xDirection === -2 && yDirection === 2) {
-    xDirection = 2;
-    return;
-  }
+  xDirection = -xDirection;
+  yDirection = -yDirection;
+}
+
+function spawnPowerUp(position) {
+  const powerUp = document.createElement("div");
+  powerUp.classList.add("powerup");
+  powerUp.style.left = position[0] + "px";
+  powerUp.style.bottom = position[1] + "px";
+  grid.appendChild(powerUp);
+  powerUps.push(powerUp);
+
+  setTimeout(() => {
+    if (powerUps.includes(powerUp)) {
+      grid.removeChild(powerUp);
+      powerUps.splice(powerUps.indexOf(powerUp), 1);
+    }
+  }, 5000);
 }
