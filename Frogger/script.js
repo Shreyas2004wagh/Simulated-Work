@@ -1,34 +1,37 @@
-const timeLeftDisplay = document.querySelector("#time-left");
-const resultDisplay = document.querySelector("#result");
-const startPauseButton = document.querySelector("#start-pause-button");
+const timeLeftDisplay = document.getElementById("time-left");
+const resultDisplay = document.getElementById("result");
+const livesDisplay = document.getElementById("lives");
+const scoreDisplay = document.getElementById("score");
+const startPauseButton = document.getElementById("start-pause-button");
+const bgMusic = document.getElementById("bg-music");
+const jumpSound = document.getElementById("jump-sound");
+const collideSound = document.getElementById("collide-sound");
+const winSound = document.getElementById("win-sound");
+const powerupSound = document.getElementById("powerup-sound");
 const squares = document.querySelectorAll(".grid div");
-const logsLeft = document.querySelectorAll(".log-left");
-const logsRight = document.querySelectorAll(".log-right");
-const carsLeft = document.querySelectorAll(".car-left");
-const carsRight = document.querySelectorAll(".car-right");
 
 let currentIndex = 76;
 const width = 9;
 let timerId;
 let outcomeTimerId;
 let currentTime = 20;
+let lives = 3;
+let score = 0;
 
 function moveFrog(e) {
   squares[currentIndex].classList.remove("frog");
+  jumpSound.play();
 
   switch (e.key) {
     case "ArrowLeft":
       if (currentIndex % width !== 0) currentIndex -= 1;
       break;
-
     case "ArrowRight":
       if (currentIndex % width < width - 1) currentIndex += 1;
       break;
-
     case "ArrowUp":
       if (currentIndex - width >= 0) currentIndex -= width;
       break;
-
     case "ArrowDown":
       if (currentIndex + width < width * width) currentIndex += width;
       break;
@@ -39,135 +42,70 @@ function moveFrog(e) {
 function autoMoveElements() {
   currentTime--;
   timeLeftDisplay.textContent = currentTime;
-  logsLeft.forEach((logLeft) => moveLogLeft(logLeft));
-  logsRight.forEach((logRight) => moveLogRight(logRight));
-  carsLeft.forEach((carLeft) => moveCarToLeft(carLeft));
-  carsRight.forEach((carRight) => moveCarToRight(carRight));
+  // Move logs, cars, and other elements here...
 }
 
-function checkOutComes() {
+function checkOutcomes() {
   lose();
   win();
 }
 
-function moveLogLeft(logLeft) {
-  switch (true) {
-    case logLeft.classList.contains("l1"):
-      logLeft.classList.remove("l1");
-      logLeft.classList.add("l2");
-      break;
-    case logLeft.classList.contains("l2"):
-      logLeft.classList.remove("l2");
-      logLeft.classList.add("l3");
-      break;
-    case logLeft.classList.contains("l3"):
-      logLeft.classList.remove("l3");
-      logLeft.classList.add("l4");
-      break;
-    case logLeft.classList.contains("l4"):
-      logLeft.classList.remove("l4");
-      logLeft.classList.add("l5");
-      break;
-    case logLeft.classList.contains("l5"):
-      logLeft.classList.remove("l5");
-      logLeft.classList.add("l1");
-      break;
-  }
-}
-
-function moveLogRight(logRight) {
-  switch (true) {
-    case logRight.classList.contains("l1"):
-      logRight.classList.remove("l1");
-      logRight.classList.add("l5");
-      break;
-    case logRight.classList.contains("l2"):
-      logRight.classList.remove("l2");
-      logRight.classList.add("l1");
-      break;
-    case logRight.classList.contains("l3"):
-      logRight.classList.remove("l3");
-      logRight.classList.add("l2");
-      break;
-    case logRight.classList.contains("l4"):
-      logRight.classList.remove("l4");
-      logRight.classList.add("l3");
-      break;
-    case logRight.classList.contains("l5"):
-      logRight.classList.remove("l5");
-      logRight.classList.add("l4");
-      break;
-  }
-}
-
-function moveCarToLeft(carLeft) {
-  switch (true) {
-    case carLeft.classList.contains("c1"):
-      carLeft.classList.remove("c1");
-      carLeft.classList.add("c2");
-      break;
-    case carLeft.classList.contains("c2"):
-      carLeft.classList.remove("c2");
-      carLeft.classList.add("c3");
-      break;
-    case carLeft.classList.contains("c3"):
-      carLeft.classList.remove("c3");
-      carLeft.classList.add("c1");
-      break;
-  }
-}
-
-function moveCarToRight(carRight) {
-  switch (true) {
-    case carRight.classList.contains("c1"):
-      carRight.classList.remove("c1");
-      carRight.classList.add("c3");
-      break;
-    case carRight.classList.contains("c2"):
-      carRight.classList.remove("c2");
-      carRight.classList.add("c1");
-      break;
-    case carRight.classList.contains("c3"):
-      carRight.classList.remove("c3");
-      carRight.classList.add("c2");
-      break;
-  }
-}
-
 function lose() {
   if (
-    squares[currentIndex].classList.contains("c1") ||
-    squares[currentIndex].classList.contains("l4") ||
-    squares[currentIndex].classList.contains("l5") ||
+    squares[currentIndex].classList.contains("car-left") ||
+    squares[currentIndex].classList.contains("log-right") ||
     currentTime <= 0
   ) {
-    resultDisplay.textContent = "You lose!";
-    clearInterval(timerId);
-    clearInterval(outcomeTimerId);
-    squares[currentIndex].classList.remove("frog");
-    document.removeEventListener("keyup", moveFrog);
+    collideSound.play();
+    lives--;
+    livesDisplay.textContent = lives;
+
+    if (lives === 0) {
+      resultDisplay.textContent = "Game Over!";
+      clearInterval(timerId);
+      clearInterval(outcomeTimerId);
+    } else {
+      resetFrogPosition();
+    }
   }
 }
 
 function win() {
   if (squares[currentIndex].classList.contains("ending-block")) {
-    resultDisplay.textContent = "You Win!";
-    clearInterval(timerId);
-    clearInterval(outcomeTimerId);
-    document.removeEventListener("keyup", moveFrog);
+    winSound.play();
+    score += 10;
+    scoreDisplay.textContent = score;
+    resetFrogPosition();
   }
+}
+
+function resetFrogPosition() {
+  squares[currentIndex].classList.remove("frog");
+  currentIndex = 76;
+  squares[currentIndex].classList.add("frog");
+}
+
+function spawnPowerUps() {
+  const randomIndex = Math.floor(Math.random() * squares.length);
+  squares[randomIndex].classList.add("power-up");
+
+  setTimeout(() => {
+    squares[randomIndex].classList.remove("power-up");
+  }, 5000);
 }
 
 startPauseButton.addEventListener("click", () => {
   if (timerId) {
     clearInterval(timerId);
     clearInterval(outcomeTimerId);
-    outcomeTimerId = null;
+    bgMusic.pause();
     timerId = null;
-    document.removeEventListener("keyup", moveFrog);
   } else {
     timerId = setInterval(autoMoveElements, 1000);
-    outcomeTimerId = setInterval(checkOutComes, 50);
-    document.addEventListener("keyup", moveFrog);
+    outcomeTimerId = setInterval(checkOutcomes, 50);
+    bgMusic.play();
   }
+  document.addEventListener("keyup", moveFrog);
 });
+
+setInterval(spawnPowerUps, 10000);
